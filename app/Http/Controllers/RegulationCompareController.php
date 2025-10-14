@@ -29,8 +29,14 @@ class RegulationCompareController extends Controller
             file_put_contents($oldPath, Http::get($request->old_url)->body());
             file_put_contents($newPath, Http::get($request->new_url)->body());
 
-            $oldText = Pdf::getText($oldPath);
-            $newText = Pdf::getText($newPath);
+            // testing env windows
+            $binPath = 'C:/poppler-25.07.0/Library/bin/pdftotext.exe';
+
+            $oldText = Pdf::getText($oldPath)->setBinPath($binPath);
+            $newText = Pdf::getText($newPath)->setBinPath($binPath);
+
+            // $oldText = Pdf::getText($oldPath);
+            // $newText = Pdf::getText($newPath);
 
             $oldPasal = $this->splitByPasal($oldText);
             $newPasal = $this->splitByPasal($newText);
