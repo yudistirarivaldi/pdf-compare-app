@@ -29,14 +29,14 @@ class RegulationCompareController extends Controller
             file_put_contents($oldPath, Http::get($request->old_url)->body());
             file_put_contents($newPath, Http::get($request->new_url)->body());
 
-            // testing env windows
-            $binPath = 'C:/poppler-25.07.0/Library/bin/pdftotext.exe';
+            $oldText = Pdf::getText($oldPath);
+            $newText = Pdf::getText($newPath);
 
-            $oldText = Pdf::getText($oldPath)->setBinPath($binPath);
-            $newText = Pdf::getText($newPath)->setBinPath($binPath);
+            $oldText = $this->cleanText($oldText);
+            $newText = $this->cleanText($newText);
 
-            // $oldText = Pdf::getText($oldPath);
-            // $newText = Pdf::getText($newPath);
+            $oldText = $this->normalizeText($oldText);
+            $newText = $this->normalizeText($newText);
 
             $oldPasal = $this->splitByPasal($oldText);
             $newPasal = $this->splitByPasal($newText);
@@ -157,4 +157,30 @@ class RegulationCompareController extends Controller
 
         return $result;
     }
+
+    private function cleanText(string $text): string
+    {
+        $text = preg_replace('/(\w+)-\s*\n\s*(\w+)/u', '$1$2', $text);
+        $text = preg_replace('/(\w+)\s*\n\s*(\w+)/u', '$1 $2', $text);
+        $text = preg_replace('/jdih\.[a-z]+\.[a-z]+/i', '', $text);
+        $text = preg_replace('/-\d+\s*/', '', $text);
+        $text = preg_replace('/[\r\n]+/', ' ', $text);
+        $text = preg_replace('/\s+/', ' ', $text);
+
+        return trim($text);
+    }
+
+
+
+    private function normalizeText(string $text): string
+    {
+        $text = preg_replace('/jdih\.[a-z]+\.[a-z]+/i', '', $text);
+        $text = preg_replace('/-\d+\s*BAB/i', 'BAB', $text);
+        $text = preg_replace('/(\(\d+\))(\s*\(\d+\))+/', '$1', $text);
+        $text = preg_replace('/\s+/', ' ', $text);
+        
+        return trim($text);
+    }
+
+
 }
