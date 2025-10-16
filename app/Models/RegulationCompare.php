@@ -9,6 +9,7 @@ class RegulationCompare extends Model
     protected $table = 'regulation_compares';
 
     protected $fillable = [
+        'uuid',
         'title',
         'old_url',
         'new_url',

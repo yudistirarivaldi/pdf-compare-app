@@ -9,6 +9,7 @@
         "guzzlehttp/guzzle": "^7.10",
         "jfcherng/php-diff": "^6.16",
         "laravel/lumen-framework": "^10.0",
+        "ramsey/uuid": "^4.9",
         "spatie/pdf-to-text": "^1.54"
     },
     "require-dev": {

@@ -18,7 +18,7 @@ $router->get('/', function () use ($router) {
 });
 
 $router->post('/api/compare', 'RegulationCompareController@store');
-$router->get('/api/compare/{id}', 'RegulationCompareController@show');
-$router->delete('/api/compare/{id}', 'RegulationCompareController@destroy');
+$router->get('/api/compare/{uuid}', 'RegulationCompareController@show');
+$router->delete('/api/compare/{uuid}', 'RegulationCompareController@destroy');
 
 

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Spatie\PdfToText\Pdf;
+use Ramsey\Uuid\Uuid;
 
 class RegulationCompareController extends Controller
 {
@@ -87,7 +88,11 @@ class RegulationCompareController extends Controller
                 'modified' => $modified,
             ];
 
+            // generate uuid
+            $uuid = Uuid::uuid4()->toString();
+
             $compare = RegulationCompare::create([
+                'uuid' => $uuid,
                 'title' => $request->title,
                 'old_url' => $request->old_url,
                 'new_url' => $request->new_url,
@@ -109,15 +114,17 @@ class RegulationCompareController extends Controller
         }
     }
 
-    public function show($id)
+    public function show($uuid)
     {
-        $compare = RegulationCompare::find($id);
+        $compare = RegulationCompare::where('uuid', $uuid)->first();
 
         if (!$compare) {
             return response()->json(['message' => 'Data not found'], 404);
         }
 
         return response()->json([
+            'id'      => $compare->id,
+            'uuid'    => $compare->uuid,
             'title'   => $compare->title,
             'meta'    => $compare->meta,
             'summary' => $compare->summary,
@@ -125,9 +132,9 @@ class RegulationCompareController extends Controller
         ]);
     }
 
-    public function destroy($id)
+    public function destroy($uuid)
     {
-        $compare = RegulationCompare::find($id);
+        $compare = RegulationCompare::where('uuid', $uuid)->first();
 
         if (!$compare) {
             return response()->json([
@@ -139,7 +146,7 @@ class RegulationCompareController extends Controller
 
         return response()->json([
             'message' => 'Comparison deleted successfully',
-            'id' => $id
+            'uuid' => $uuid
         ], 200);
     }
 
