@@ -24,14 +24,28 @@ class RegulationCompareController extends Controller
         }
 
         try {
+            $existingCompare = RegulationCompare::where('old_url', $request->old_url)
+                ->where('new_url', $request->new_url)
+                ->first();
+
+            if ($existingCompare) {
+                return response()->json([
+                    'message' => 'Comparison for these URL already exists',
+                    'data' => [
+                        'uuid' => $existingCompare->uuid,
+                        'title' => $existingCompare->title,
+                    ]
+                ], 400);
+            }
+
             $oldPath = storage_path('app/old.pdf');
             $newPath = storage_path('app/new.pdf');
 
             file_put_contents($oldPath, Http::get($request->old_url)->body());
             file_put_contents($newPath, Http::get($request->new_url)->body());
 
-            $oldText = Pdf::getText($oldPath);
-            $newText = Pdf::getText($newPath);
+            $oldText = Pdf::getText($oldPath, null, ['-layout']);
+            $newText = Pdf::getText($newPath, null, ['-layout']);
 
             $oldText = $this->cleanText($oldText);
             $newText = $this->cleanText($newText);
@@ -88,7 +102,6 @@ class RegulationCompareController extends Controller
                 'modified' => $modified,
             ];
 
-            // generate uuid
             $uuid = Uuid::uuid4()->toString();
 
             $compare = RegulationCompare::create([
@@ -167,27 +180,25 @@ class RegulationCompareController extends Controller
 
     private function cleanText(string $text): string
     {
-        $text = preg_replace('/(\w+)-\s*\n\s*(\w+)/u', '$1$2', $text);
-        $text = preg_replace('/(\w+)\s*\n\s*(\w+)/u', '$1 $2', $text);
+        $text = preg_replace('/\s*\.\w*\s*-\d+-\s*/', ' ', $text);
+        $text = preg_replace('/Halaman\s+\d+/i', '', $text);
         $text = preg_replace('/jdih\.[a-z]+\.[a-z]+/i', '', $text);
-        $text = preg_replace('/-\d+\s*/', '', $text);
-        $text = preg_replace('/[\r\n]+/', ' ', $text);
-        $text = preg_replace('/\s+/', ' ', $text);
+        $text = preg_replace('/(\w+)-\s*\n\s*(\w+)/u', '$1$2', $text);
+        $text = preg_replace("/\n{3,}/", "\n\n", $text);
+        $text = preg_replace('/[ \t]+/', ' ', $text);
 
         return trim($text);
     }
-
-
 
     private function normalizeText(string $text): string
     {
-        $text = preg_replace('/jdih\.[a-z]+\.[a-z]+/i', '', $text);
-        $text = preg_replace('/-\d+\s*BAB/i', 'BAB', $text);
-        $text = preg_replace('/(\(\d+\))(\s*\(\d+\))+/', '$1', $text);
-        $text = preg_replace('/\s+/', ' ', $text);
-        
+        $text = preg_replace('/(?<!\n)(Pasal\s+\d+[A-Za-z]?)/i', "\n\n$1", $text);
+        $text = preg_replace('/(?<!\n)(ayat\s*\(\d+\))/i', "\n$1", $text);
+        $text = preg_replace('/[ \t]+/', ' ', $text);
+
         return trim($text);
     }
+
 
 
 }
