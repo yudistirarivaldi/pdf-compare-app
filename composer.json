@@ -5,17 +5,18 @@
     "license": "MIT",
     "type": "project",
     "require": {
-        "php": "^8.1",
-        "guzzlehttp/guzzle": "^7.10",
-        "jfcherng/php-diff": "^6.16",
-        "laravel/lumen-framework": "^10.0",
-        "ramsey/uuid": "^4.9",
-        "spatie/pdf-to-text": "^1.54"
+        "php": "^7.3",
+        "guzzlehttp/guzzle": "^7.0",
+        "jfcherng/php-diff": "^5.0",
+        "laravel/lumen-framework": "^8.0",
+        "ramsey/uuid": ">=4.0 <4.2",
+        "spatie/pdf-to-text": "^1.1"
     },
+
     "require-dev": {
-        "fakerphp/faker": "^1.9.1",
-        "mockery/mockery": "^1.4.4",
-        "phpunit/phpunit": "^10.0"
+        "fzaninotto/faker": "^1.9",
+        "mockery/mockery": "^1.3",
+        "phpunit/phpunit": "^8.5"
     },
     "autoload": {
         "psr-4": {
