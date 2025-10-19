@@ -17,8 +17,9 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
-$router->post('/api/compare', 'RegulationCompareController@store');
-$router->get('/api/compare/{uuid}', 'RegulationCompareController@show');
-$router->delete('/api/compare/{uuid}', 'RegulationCompareController@destroy');
-
+$router->group(['prefix' => 'api', 'middleware' => 'auth.basic'], function () use ($router) {
+    $router->post('/compare', 'RegulationCompareController@store');
+    $router->get('/compare/{uuid}', 'RegulationCompareController@show');
+    $router->delete('/compare/{uuid}', 'RegulationCompareController@destroy');
+});
 
