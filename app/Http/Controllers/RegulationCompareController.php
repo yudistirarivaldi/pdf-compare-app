@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\RegulationCompare;
+use App\Models\ApiLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Spatie\PdfToText\Pdf;
 use Ramsey\Uuid\Uuid;
+use Illuminate\Support\Facades\DB;
 
 class RegulationCompareController extends Controller
 {
@@ -22,6 +24,8 @@ class RegulationCompareController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
+
+        DB::beginTransaction();
 
         try {
             $existingCompare = RegulationCompare::where('old_url', $request->old_url)
@@ -114,16 +118,39 @@ class RegulationCompareController extends Controller
                 'changes' => $changes,
             ]);
 
-            return response()->json([
+            $response = [
                 'message' => 'Comparison created successfully',
                 'data' => $compare,
-            ], 201);
+            ];
+
+            ApiLog::create([
+                'endpoint' => $request->path(),
+                'method' => $request->method(),
+                'request_body' => $request->all(),
+                'response_body' => $response,
+                'http_status' => 201,
+            ]);
+
+            DB::commit();
+
+            return response()->json($response, 201);
 
         } catch (\Exception $e) {
+
+            DB::rollBack(); 
+
             return response()->json([
                 'message' => 'Error processing comparison',
                 'error' => $e->getMessage(),
             ], 500);
+
+            ApiLog::create([
+                'endpoint' => $request->path(),
+                'method' => $request->method(),
+                'request_body' => $request->all(),
+                'response_body' => ['message' => 'Error processing comparison', 'error' => $e->getMessage()],
+                'http_status' => 500,
+            ]);
         }
     }
 
