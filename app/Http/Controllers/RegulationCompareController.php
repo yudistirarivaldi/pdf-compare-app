@@ -162,10 +162,11 @@ class RegulationCompareController extends Controller
                 'title' => $request->title,
                 'old_url' => $request->old_url,
                 'new_url' => $request->new_url,
-                'meta' => $meta,
-                'summary' => $summary,
-                'changes' => $changes,
+                'meta' => json_encode($meta, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
+                'summary' => json_encode($summary, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
+                'changes' => json_encode($changes, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
             ]);
+
 
             $response = [
                 'message' => 'Comparison created successfully',
@@ -215,10 +216,11 @@ class RegulationCompareController extends Controller
             'id'      => $compare->id,
             'uuid'    => $compare->uuid,
             'title'   => $compare->title,
-            'meta'    => $compare->meta,
-            'summary' => $compare->summary,
-            'changes' => $compare->changes,
+            'meta'    => json_decode($compare->meta, true),
+            'summary' => json_decode($compare->summary, true),
+            'changes' => json_decode($compare->changes, true),
         ]);
+
     }
 
     public function destroy($uuid)

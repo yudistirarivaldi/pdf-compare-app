@@ -18,9 +18,6 @@ class RegulationCompare extends Model
         'changes',
     ];
 
-    protected $casts = [
-        'meta' => 'array',
-        'summary' => 'array',
-        'changes' => 'array',
-    ];
+    protected $casts = [];
+
 }
