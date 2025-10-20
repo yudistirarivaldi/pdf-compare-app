@@ -25,6 +25,27 @@ class RegulationCompareController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        $oldUrl = $request->old_url;
+        $newUrl = $request->new_url;
+
+         // Must end with .pdf
+        if (!str_ends_with(strtolower(parse_url($oldUrl, PHP_URL_PATH)), '.pdf') || !str_ends_with(strtolower(parse_url($newUrl, PHP_URL_PATH)), '.pdf')) {
+            return response()->json([
+                'message' => 'Both old_url and new_url must be PDF files (.pdf).',
+            ], 422);
+        }
+
+         // Must come from jdih.kemenkoinfra.go.id
+        $allowedDomain = 'jdih.kemenkoinfra.go.id';
+        $oldHost = parse_url($oldUrl, PHP_URL_HOST);
+        $newHost = parse_url($newUrl, PHP_URL_HOST);
+
+        if ($oldHost !== $allowedDomain || $newHost !== $allowedDomain) {
+            return response()->json([
+                'message' => 'Both URLs must be from https://jdih.kemenkoinfra.go.id domain.',
+            ], 422);
+        }
+
         DB::beginTransaction();
 
         try {
@@ -44,12 +65,24 @@ class RegulationCompareController extends Controller
 
             $oldPath = storage_path('app/old.pdf');
             $newPath = storage_path('app/new.pdf');
-
+            
             file_put_contents($oldPath, Http::get($request->old_url)->body());
             file_put_contents($newPath, Http::get($request->new_url)->body());
+            
+            $binaryPath = '/usr/local/bin/pdftotext';
 
-            $oldText = Pdf::getText($oldPath, null, ['-layout']);
-            $newText = Pdf::getText($newPath, null, ['-layout']);
+            $oldText = (new Pdf($binaryPath))
+                ->setPdf($oldPath)
+
+                ->text();
+
+            $newText = (new Pdf($binaryPath))
+                ->setPdf($newPath)
+                ->setOptions(['layout'])
+                ->text();
+
+            $oldText = Pdf::getText($oldPath, $binaryPath, ['layout']);
+            $newText = Pdf::getText($newPath, $binaryPath, ['layout']);
 
             $oldText = $this->cleanText($oldText);
             $newText = $this->cleanText($newText);
