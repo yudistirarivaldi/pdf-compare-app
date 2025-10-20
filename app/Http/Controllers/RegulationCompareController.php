@@ -69,7 +69,23 @@ class RegulationCompareController extends Controller
             file_put_contents($oldPath, Http::get($request->old_url)->body());
             file_put_contents($newPath, Http::get($request->new_url)->body());
             
-            $binaryPath = '/usr/local/bin/pdftotext';
+            $possiblePaths = [
+                '/usr/bin/pdftotext',          // Ubuntu / Debian / CentOS
+                '/usr/local/bin/pdftotext',    // macOS Intel / Homebrew lama
+                '/opt/homebrew/bin/pdftotext', // macOS Apple Silicon (M1/M2)
+            ];
+
+            $binaryPath = null;
+            foreach ($possiblePaths as $path) {
+                if (file_exists($path)) {
+                    $binaryPath = $path;
+                    break;
+                }
+            }
+
+            if (!$binaryPath) {
+                throw new \Exception('pdftotext binary not found on this system. Please install poppler-utils or poppler.');
+            }
 
             $oldText = (new Pdf($binaryPath))
                 ->setPdf($oldPath)
