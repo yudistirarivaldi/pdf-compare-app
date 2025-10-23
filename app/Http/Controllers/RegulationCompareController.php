@@ -241,6 +241,8 @@ class RegulationCompareController extends Controller
         ], 200);
     }
 
+    
+
     private function splitByPasal(string $text): array
     {
         $pattern = '/(?=Pasal\s+\d+[A-Za-z]?(?:\s+ayat\s*\(\d+\))?)/i';
